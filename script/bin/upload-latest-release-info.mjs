@@ -3,15 +3,18 @@
 /**
  * @fileoverview
  * Fetch the latest release info and upload it to digital ocean spaces.
- * use --repo to specify the repo of github repository, e.g: --repo=openblockcc/external-resources-v2
+ * use --repo to specify the repo of github repository, e.g: --repo=madfire/blockgpt-external-resources
  * use --endPoint to specify address of digital ocean spaces, e.g: --endPoint=https://sgp1.digitaloceanspaces.com
- * use --bucket to specify the bucket name, e.g: --bucket=openblock
+ * use --bucket to specify the bucket name, e.g: --bucket=blockgpt
  */
 import fetch from 'node-fetch';
 import {S3, PutObjectCommand} from '@aws-sdk/client-s3';
 import parseArgs from '../lib/parseArgs.js';
 
 const {repo, endPoint, bucket} = parseArgs();
+
+const effectiveRepo = repo || process.env.BLOCKGPT_EXTERNAL_RESOURCES_REPO || 'madfire/blockgpt-external-resources';
+const effectiveBucket = bucket || process.env.BLOCKGPT_EXTERNAL_RESOURCES_BUCKET || 'blockgpt';
 
 const FILE_PATH = 'resource/latestRelease.json';
 
@@ -25,14 +28,14 @@ const s3Client = new S3({
 });
 
 const bucketParams = content => ({
-    Bucket: bucket,
+    Bucket: effectiveBucket,
     Key: FILE_PATH,
     Body: Buffer.from(content, 'utf8'),
     ACL: 'public-read'
 });
 
 const getLatest = () => {
-    const url = `https://api.github.com/repos/${repo}/releases/latest`;
+    const url = `https://api.github.com/repos/${effectiveRepo}/releases/latest`;
 
     return fetch(url)
         .then(res => res.json());

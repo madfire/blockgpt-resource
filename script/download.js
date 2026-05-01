@@ -2,9 +2,13 @@
  * @fileoverview
  * Download external-resrouce from the specified repository, extract it and check the comparison checksum
  *
- * use --repo to specify the download address, e.g: --repo=openblockcc/external-resources
+ * use --repo to specify the download address, e.g: --repo=madfire/blockgpt-external-resources
  * use --plat to Specify the download platform, gitee or github
- * use --cdn to specify the use of the cdn proxy server address, e.g: --cdn=https://cdn.openblock.cc/
+ * use --cdn to specify the use of the cdn proxy server address
+ *
+ * default repo can be overridden with BLOCKGPT_EXTERNAL_RESOURCES_REPO
+ * default platform can be overridden with BLOCKGPT_EXTERNAL_RESOURCES_PROVIDER
+ * default cdn can be overridden with BLOCKGPT_EXTERNAL_RESOURCES_CDN
  */
 
 const path = require('path');
@@ -20,13 +24,15 @@ const {formatTime} = require('../src/format');
 const parseArgs = require('./lib/parseArgs');
 
 
-const {repo, plat, cdn} = parseArgs();
+const {
+    repo: argRepo,
+    plat: argPlat,
+    cdn: argCdn
+} = parseArgs();
 
-
-if (!repo) {
-    console.error(clc.red('ERR!: No repo specified'));
-    process.exit(1);
-}
+const repo = argRepo || process.env.BLOCKGPT_EXTERNAL_RESOURCES_REPO || 'madfire/blockgpt-external-resources';
+const plat = argPlat || process.env.BLOCKGPT_EXTERNAL_RESOURCES_PROVIDER || 'github';
+const cdn = argCdn || process.env.BLOCKGPT_EXTERNAL_RESOURCES_CDN || '';
 
 const getLatest = () => {
     let url;

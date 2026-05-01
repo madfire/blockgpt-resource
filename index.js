@@ -28,25 +28,34 @@ class OpenblockResourceServer extends Emitter{
             this._builtinResourcesPath = path.join(DEFAULT_BUILTIN_RESOURCES_PATH);
         }
 
-        // If the path to OPENBLOCK_EXTERNAL_RESOURCES is set in the environment variable, or there
-        // is an OpenBlockExternalResources folder in the same directory as the software installation directory,
+        // If the path to BLOCKGPT_EXTERNAL_RESOURCES is set in the environment variable, or there
+        // is a BlockGPTExternalResources folder in the same directory as the software installation directory,
         // the content in this path or directory will be used first, rather than the content in the software
         // installation path.
         // This method is used when customizing by a third-party manufacturer, so as to avoid overwriting
         // the content of the third - party manufacturer when updating the software.
         // For MAC or Linux devices, it is not practical to use a path relative to the installation
-        // directory to store OpenBlockExternalResources, so we will scan the external resources path
+        // directory to store BlockGPTExternalResources, so we will scan the external resources path
         // set in the environment variable first.
-        const envOpenBlockExternalResources = process.env.OPENBLOCK_EXTERNAL_RESOURCES;
-        if (envOpenBlockExternalResources) {
+        const envBlockGPTExternalResources = process.env.BLOCKGPT_EXTERNAL_RESOURCES;
+        const envLegacyExternalResources = process.env.OPENBLOCK_EXTERNAL_RESOURCES;
+        if (envBlockGPTExternalResources) {
+            console.info(`env BLOCKGPT_EXTERNAL_RESOURCES: \
+"${envBlockGPTExternalResources}"`);
+            this._builtinResourcesPath = envBlockGPTExternalResources;
+        } else if (envLegacyExternalResources) {
             console.info(`env OPENBLOCK_EXTERNAL_RESOURCES: \
-"${envOpenBlockExternalResources}"`);
-            this._builtinResourcesPath = envOpenBlockExternalResources;
+"${envLegacyExternalResources}"`);
+            this._builtinResourcesPath = envLegacyExternalResources;
         } else {
-            const thirdPartyResourcesPath = path.join(this._builtinResourcesPath, '../../OpenBlockExternalResources');
+            const thirdPartyResourcesPath = path.join(this._builtinResourcesPath, '../../BlockGPTExternalResources');
+            const legacyThirdPartyResourcesPath = path.join(this._builtinResourcesPath, '../../OpenBlockExternalResources');
             if (fs.existsSync(thirdPartyResourcesPath)) {
-                console.info('The OpenBlockExternalResources folder is detected in the parent directory');
+                console.info('The BlockGPTExternalResources folder is detected in the parent directory');
                 this._builtinResourcesPath = thirdPartyResourcesPath;
+            } else if (fs.existsSync(legacyThirdPartyResourcesPath)) {
+                console.info('The legacy OpenBlockExternalResources folder is detected in the parent directory');
+                this._builtinResourcesPath = legacyThirdPartyResourcesPath;
             }
         }
 
